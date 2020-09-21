@@ -6,7 +6,7 @@ import Infobox from './components/Infobox';
 import LineGraph from './components/LineGraph';
 import Map from './components/Map';
 import Table from './components/Table';
-import { sortData } from './util';
+import { prettyPrintStat, sortData } from './util';
 
 function App() {
 
@@ -17,6 +17,8 @@ function App() {
   const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
   const [mapZoom, setMapZoom] = useState(3)
   const [mapCountries, setMapCountries] = useState([])
+  const [casesType, setCasesType] = useState("cases")
+
 
 
   useEffect(() => {
@@ -59,7 +61,6 @@ function App() {
       .then(data => {
         setCountry(countryCode);
         setCountryInfo(data);
-        console.log("ok", data);
         setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
         setMapZoom(4);
       })
@@ -87,21 +88,39 @@ function App() {
         </div>
 
         <div className="app__stats">
-          <Infobox title="Coronavirus Cases" cases={countryInfo.todayCases} total={countryInfo.cases} />
-          <Infobox title="Recovered" cases={countryInfo.todayRecovered} total={countryInfo.recovered} />
-          <Infobox title="Deaths" cases={countryInfo.todayDeaths} total={countryInfo.deaths} />
+          <Infobox
+            isRed
+            active={casesType === "cases"}
+            onClick={(e) => setCasesType("cases")}
+            title="Coronavirus Cases"
+            cases={prettyPrintStat(countryInfo.todayCases)}
+            total={prettyPrintStat(countryInfo.cases)} />
+          <Infobox
+            active={casesType === "recovered"}
+            onClick={(e) => setCasesType("recovered")}
+            title="Recovered"
+            cases={prettyPrintStat(countryInfo.todayRecovered)}
+            total={prettyPrintStat(countryInfo.recovered)} />
+          <Infobox
+            isRed
+            active={casesType === "deaths"}
+            onClick={(e) => setCasesType("deaths")}
+            title="Deaths"
+            cases={prettyPrintStat(countryInfo.todayDeaths)}
+            total={prettyPrintStat(countryInfo.deaths)} />
         </div>
         <Map center={mapCenter}
           zoom={mapZoom}
           countries={mapCountries}
+          casesType={casesType}
         />
       </div>
       <Card className="app__right">
         <CardContent>
           <h3>Live Cases by Country</h3>
           <Table countries={tableData} />
-          <h3>Worldwide New Cases</h3>
-          <LineGraph />
+          <h3 className="app__graphTitle">Worldwide New {casesType}</h3>
+          <LineGraph className="app__graph" casesType={casesType} />
         </CardContent>
       </Card>
     </div>
